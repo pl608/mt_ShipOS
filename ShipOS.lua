@@ -309,6 +309,11 @@ end
 function jdset(c) --jumpdrive set -- (table) c,  returns nil
     dls(mem.jd.channel, merge({command = "set", formupdate = true}, c))
 end
+function quarry_cmd(cmd)
+    digiline_send(mem.quarry.channel, {command = cmd})
+end
+function q_resart() quarry_cmd('restart') end
+--function q_enabled() quarry_cmd('restart') end
 function init()
     --mxnote:
     -- The init function is to make sure that all the mem variables are defined and properly preset.
@@ -322,7 +327,7 @@ function init()
         mem.ui.screen1 = {}
         mem.ui.screen1.channel = "touch"
         mem.ui.screen1.active_page = 1
-        mem.ui.screen1.pages = {"Navigation", "Bookmarks","Notepad","Settings"} --mxedit
+        mem.ui.screen1.pages = {"Navigation", "Ship Controls", "Bookmarks","Notepad","Settings"} --mxedit
     mem.ui.vars = {} -- mxnote the (temporary)place for variables that need to be remembered between actions,pages. Stuff only gets realy used when the user presses a button(in most cases)
         mem.ui.vars.radius = 1 -- hardcode radius
         mem.ui.vars.step = 11
@@ -331,15 +336,20 @@ function init()
         mem.ui.destination=0 
         mem.ui.vars.bookmarkstext="bookmark description,0,0,0"
         mem.ui.vars.notepadtext="Notes for ship go here"
+    mem.quarry = {}
+        mem.quarry.depth = 10
+        mem.quarry.channel = "top"
+        mem.quarry.command = ""
+        mem.quarry.msg = ""
     mem.system = {}
         mem.system.user = ""
-        mem.system.admin = {"MCLV"} --help: change this to your username
+        mem.system.admin = {"player1234", "MCLV"} --help: change this to your username
         mem.system.staff = {} --help: change these to the names of your friends that you'd also like to be able to access the system. Or you can just use the settings tab in the running system
         mem.system.bookmarks = {}
     mem.jdlog = {lst = "", buffer = {}}
     mem.jd = {}
         mem.jd.delay=0.3 
-        mem.jd.channel = "jumpdrive" -- help: enter fleet controller or jumpdrive digiline channel
+        mem.jd.channel = "fleetcontroller" -- help: enter fleet controller or jumpdrive digiline channel
         mem.jd.msg = ""
         mem.jd.command = "" -- next command we'd like to send to the jd by interrupt -- sometimes we need to wait before we can send (digilines)
         mem.jd.target = ""
@@ -507,9 +517,9 @@ function UI_ShowScreen(msg)
                 command = "add",
                 element = "animated_image",
                 name = "backgroundimage1",
-                texture_name = "default_river_water_flowing_animated.png",
-                frame_count = 16,
-                frame_duration = 200,
+                texture_name = "touch_screen.png",
+                frame_count = 1,
+                frame_duration = 100,
                 frame_start = 1,
                 X = 0,
                 Y = 0,
@@ -897,6 +907,36 @@ function UI_ShowScreen(msg)
                     name = "notepadtext",
                     label = "",
                     default = mem.ui.vars.notepadtext
+                }
+            )
+        end
+        if pageName == "Ship Controls" and role =="admin" then
+            table_insert(
+                screen,
+                {
+                    command = "add",
+                    element = "field",
+                    Y = (_bh2 *2) +(_R12 * 1),
+                    X = _C12 * 1,
+                    W = _C12 * 10,
+                    H = _R12,
+                    name = "Sstaff",
+                    label = "Quarry Depth Offset",
+                    default = join(mem.system.staff,",")
+                }
+            )
+            table_insert(
+                screen,
+                {
+                    command = "add",
+                    element = "field",
+                    Y = 0,
+                    X = _C12 * 9,
+                    W = _C12 * 1,
+                    H = _R12,
+                    name = "radius",
+                    label = "",
+                    default = tostring(mem.ui.vars.depth)
                 }
             )
         end
