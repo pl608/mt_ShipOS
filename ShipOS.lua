@@ -312,6 +312,9 @@ end
 function quarry_cmd(cmd)
     digiline_send(mem.quarry.channel, {command = cmd})
 end
+function refresh_ss()
+    digiline_send(mem.station.channel, {command = "get"})
+end
 function q_resart() quarry_cmd('restart') end
 --function q_enabled() quarry_cmd('restart') end
 function init()
@@ -341,6 +344,10 @@ function init()
         mem.quarry.channel = "top"
         mem.quarry.command = ""
         mem.quarry.msg = ""
+    mem.station = {}
+        mem.station.channel = "switching"
+        mem.station.demand = 0
+        mem.station.supply = 0
     mem.system = {}
         mem.system.user = ""
         mem.system.admin = {"player1234", "MCLV"} --help: change this to your username
@@ -910,7 +917,7 @@ function UI_ShowScreen(msg)
                 }
             )
         end
-        if pageName == "Ship Controls" and role =="admin" then
+        if pageName == "Ship Controls"then
             table_insert(
                 screen,
                 {
@@ -929,14 +936,14 @@ function UI_ShowScreen(msg)
                 screen,
                 {
                     command = "add",
-                    element = "field",
+                    element = "button",
                     Y = 0,
                     X = _C12 * 9,
                     W = _C12 * 1,
                     H = _R12,
-                    name = "radius",
-                    label = "",
-                    default = tostring(mem.ui.vars.depth)
+                    name = "s_refresh",
+                    label = "Refresh Switching Data",
+                    default = refresh_ss(),
                 }
             )
         end
@@ -1087,9 +1094,12 @@ if event then
                         log({DEBUG="distance detected"})
                     end
                 end
-
-                
-                
+            elseif event.channel == mem.station.channel then
+                if event.msg ~= nil then
+                    log(event.msg.demand)
+                    mem.station.demand = event.msg.demand
+                    mem.station.supply = event.msg.supply
+            end
             else
                 log(event)
             end
